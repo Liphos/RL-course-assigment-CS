@@ -38,6 +38,7 @@ class MonteCarlo(Agent):
         self,
         env_observation_space: tuple | gym.Space,
         env_action_space: gym.Space,
+        max_episodes: int,
         gamma: float = 0.95,
     ) -> None:
 
@@ -55,6 +56,7 @@ class MonteCarlo(Agent):
         # Epsilon
         self.epsilon = 1.0
         self.nb_episodes = 0
+        self.max_episodes = max_episodes
 
     def _get_state_action_size(
         self, env_observation_space: gym.Space, env_action_space: gym.Space
@@ -119,7 +121,7 @@ class MonteCarlo(Agent):
 
             # Update epsilon
             self.nb_episodes += 1
-            self.epsilon = 0.1 + 0.9 * np.exp(-0.001 * self.nb_episodes)
+            self.epsilon = 0.9 * np.exp(-4 * self.nb_episodes / self.max_episodes)
 
             # Reset episode history
             self.episode_states = []
@@ -149,6 +151,7 @@ class Sarsa(Agent):
         self,
         env_observation_space: tuple | gym.Space,
         env_action_space: gym.Space,
+        max_episodes: int,
         gamma: float = 0.95,
         lmbda: float = 0.9,
         alpha: float = 0.1,
@@ -163,6 +166,7 @@ class Sarsa(Agent):
         # Create memories
         self.e = np.zeros(self.n_states + (self.n_actions,))
         self.Q = np.zeros(self.n_states + (self.n_actions,))
+        self.count = np.zeros(self.n_states + (self.n_actions,))
         # Episode history
         self.episode_states: List[np.ndarray] = []
         self.epsiode_actions: List[int] = []
@@ -170,6 +174,7 @@ class Sarsa(Agent):
         # Epsilon
         self.epsilon = 1.0
         self.nb_episodes = 0
+        self.max_episodes = max_episodes
 
     def _get_state_action_size(
         self, env_observation_space: gym.Space, env_action_space: gym.Space
@@ -238,11 +243,12 @@ class Sarsa(Agent):
                         - self.Q[state][self.epsiode_actions[incr]]
                     )
                 self.e[state][self.epsiode_actions[incr]] += 1
+                self.count[state][self.epsiode_actions[incr]] += 1
                 self.Q += self.alpha * delta * self.e
                 self.e *= self.gamma * self.lmbda
             # Update epsilon
             self.nb_episodes += 1
-            self.epsilon = 0.1 + 0.9 * np.exp(-0.0001 * self.nb_episodes)
+            self.epsilon = 0.9 * np.exp(-4 * self.nb_episodes / self.max_episodes)
 
             # Reset episode history
             self.episode_states = []

@@ -9,6 +9,7 @@ if __name__ == "__main__":
 
     # initiate environment
     env = gym.make("TextFlappyBird-v0", height=15, width=20, pipe_gap=4)
+    print(env.observation_space, env.action_space)
     obs = env.reset()
 
     # iterate
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         # Render the game
         os.system("clear")
         sys.stdout.write(env.render())
-        time.sleep(2)  # FPS
+        time.sleep(0.2)  # FPS
 
         # If player is dead break
         if done:
